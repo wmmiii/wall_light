@@ -86,6 +86,7 @@ void sendIndex(WiFiClient client) {
   client.println("<body><h1>Wall Light</h1>");
   client.println("<button onclick=\"setCycle()\">Cycle</button>");
   client.println("<button onclick=\"setHue(0)\">Red</button>");
+  client.println("<button onclick=\"setHue(32)\">Orange</button>");
   client.println("<button onclick=\"setHue(64)\">Yellow</button>");
   client.println("<button onclick=\"setHue(96)\">Green</button>");
   client.println("<button onclick=\"setHue(128)\">Cyan</button>");

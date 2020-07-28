@@ -11,6 +11,9 @@
 
 #define NUM_LEDS (WIDTH * HEIGHT)
 
+#define NUM_DROPLETS 20
+#define DROPLET_FALL_DIST (HEIGHT * 8)
+
 namespace led {
 
 CRGBArray<NUM_LEDS> leds;
@@ -28,30 +31,85 @@ static inline uint8_t y(int index) {
   return index / WIDTH;
 }
 
+static inline uint8_t index(uint8_t x, uint8_t y) {
+  uint8_t index = y * WIDTH;
+  if (y % 2) {
+    index += (WIDTH - x) - 1;
+  } else {
+    index += x;
+  }
+  return index;
+}
+
+static inline uint8_t random(uint8_t seed) {
+  return (1664525 * seed + 1013904223);
+}
+
+static CHSV getColor(uint32_t t) {
+  if (config.cycle) {
+    return CHSV((t / 32) % 256, 255, 96);
+  } else {
+    return config.base_color;
+  }
+}
+
 static void breathe(uint32_t t,
     CRGBArray<NUM_LEDS> leds,
-    uint8_t i,
-    uint8_t pX,
-    uint8_t pY,
     Configuration config) {
-  double w = WIDTH / 2.0;
-  double h = HEIGHT / 2.0;
-  double cX = (pX - w + 0.5) / w;
-  double cY = (pY - h + 0.5) / h;
+  for(int i = 0; i < NUM_LEDS; i++) {
+    int8_t pX = x(i);
+    int8_t pY = y(i);
 
-  double dist = sqrt(cX * cX + cY * cY);
-  double brightness = sin((dist * 2.0 + -t / 128.0));
-  uint8_t value = max(brightness * 128.0 - 32.0, 0.0);
+    double w = WIDTH / 2.0;
+    double h = HEIGHT / 2.0;
+    double cX = (pX - w + 0.5) / w;
+    double cY = (pY - h + 0.5) / h;
 
-  CHSV color;
-  if (config.cycle) {
-    color = CHSV((t / 32) % 256, 255, value);
-  } else {
-    color = config.base_color;
+    double dist = sqrt(cX * cX + cY * cY);
+    double brightness = sin((dist * 2.0 + -t / 128.0));
+    uint8_t value = max(brightness * 128.0 - 32.0, 0.0);
+
+    CHSV color = getColor(t);
     color.value = value;
+
+    leds[i] = color;
+  }
+}
+
+static void rain(uint32_t time,
+    CRGBArray<NUM_LEDS> leds,
+    Configuration config) {
+  double t = time / 16.0;
+
+  for (int i = 0; i < NUM_LEDS; ++i) {
+    leds[i].fadeToBlackBy(255);
   }
 
-  leds[i] = color;
+  CHSV color(getColor(time));
+
+  for (int d = 0; d < NUM_DROPLETS; ++d) {
+    uint8_t x = random(d * 27 + 5) % WIDTH;
+    uint8_t speed = random(d * 5 + 10) % 3 + 1;
+    double y = t * speed + floor(random(d * 13 + 20));
+    uint32_t y_floor = floor(y);
+
+    double diff = y - y_floor;
+    
+    color.value = max(diff * 96.0, 0.0);
+    if (y_floor % DROPLET_FALL_DIST < HEIGHT) {
+      leds[index(x, y_floor % DROPLET_FALL_DIST)] = color;
+    }
+
+    uint8_t TAIL_LENGTH = 5;
+    for (int i = 0; i < TAIL_LENGTH; ++i) {
+      double amount = 1.0 - (i + diff) / TAIL_LENGTH;
+      uint32_t dY = y_floor - i - 1;
+      color.value = max(amount * 96.0, 0.0);
+      if (dY % DROPLET_FALL_DIST < HEIGHT) {
+        leds[index(x, dY % DROPLET_FALL_DIST)] = color;
+      }
+    }
+  }
 }
 
 void setup() {
@@ -61,13 +119,7 @@ void setup() {
 
 void loop(){
   const uint32_t t = millis() / 8;
-
-  for(int i = 0; i < NUM_LEDS; i++) {
-    int8_t pX = x(i);
-    int8_t pY = y(i);
-
-    breathe(t, leds, i, pX, pY, config);
-  }
+  rain(t, leds, config);
   FastLED.delay(8);
 }
 
