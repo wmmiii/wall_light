@@ -65,6 +65,12 @@ void sendIndex(WiFiClient client) {
 
   client.println(
     "<script>\n"
+    "function setEffect(effect) {\n"
+    "  fetch(`/effect/${effect}`, {\n"
+    "    method: 'PUT'\n"
+    "  });\n"
+    "}\n"
+    "\n"
     "function setHue(hue) {\n"
     "  fetch(`/hue/${hue}`, {\n"
     "    method: 'PUT'\n"
@@ -84,6 +90,9 @@ void sendIndex(WiFiClient client) {
   
   // Web Page Heading
   client.println("<body><h1>Wall Light</h1>");
+  client.println("<button onclick=\"setEffect(0)\">Breathe</button>");
+  client.println("<button onclick=\"setEffect(1)\">Rain</button>");
+  client.println("<button onclick=\"setCycle()\">Cycle</button>");
   client.println("<button onclick=\"setCycle()\">Cycle</button>");
   client.println("<button onclick=\"setHue(0)\">Red</button>");
   client.println("<button onclick=\"setHue(32)\">Orange</button>");
@@ -121,14 +130,22 @@ void loop(){
 
               client.println("HTTP/1.1 202 Accepted");
               client.println();
+
             } else if (header.indexOf("PUT /hue") >= 0 ) {
-              // auto first_space = header.indexOf(" ");
-              // auto second_space = header.indexOf(9, first_space + 1);
               String hue_string = header.substring(9);
               led::set_hue(hue_string.toInt());
 
               client.println("HTTP/1.1 202 Accepted");
               client.println();
+
+            } else if (header.indexOf("PUT /effect") >= 0 ) {
+              String hue_string = header.substring(12);
+
+              led::set_effect(static_cast<led::Effect>(hue_string.toInt()));
+
+              client.println("HTTP/1.1 202 Accepted");
+              client.println();
+
             } else {
               client.println("HTTP/1.1 404 Not Found");
               client.println("Content-type:text/plain");

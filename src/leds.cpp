@@ -119,10 +119,25 @@ void setup() {
 
 void loop(){
   const uint32_t t = millis() / 8;
-  rain(t, leds, config);
+  switch (config.effect) {
+    case BREATHE: 
+      breathe(t, leds, config);
+      break;
+    case RAIN:
+      rain(t, leds, config);
+      break;
+    default:
+      for (int i = 0; i < NUM_LEDS; ++i) {
+        leds[i].fadeToBlackBy(16);
+      }
+  }
   FastLED.delay(8);
 }
 
+
+void set_effect(Effect effect) {
+  config.effect = effect;
+}
 
 void set_cycle() {
   config.base_color = CHSV(0, 0, 0);
