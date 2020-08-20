@@ -6,8 +6,8 @@
 namespace wifi {
 
 // Replace with your network credentials
-const char* ssid = "CertainlyPorn";
-const char* password = "7195343577";
+const char* ssid = "ssid";
+const char* password = "password";
 
 // Set web server port number to 80
 WiFiServer server(80);
