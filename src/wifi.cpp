@@ -106,8 +106,9 @@ void sendIndex(WiFiClient client) {
   
   // Web Page Heading
   client.println("<body><h1>Wall Light</h1>");
-  client.println("<button onclick=\"setEffect(0)\">Breathe</button>");
-  client.println("<button onclick=\"setEffect(1)\">Rain</button>");
+  client.println("<button onclick=\"setEffect(0)\">Steady</button>");
+  client.println("<button onclick=\"setEffect(1)\">Breathe</button>");
+  client.println("<button onclick=\"setEffect(2)\">Rain</button>");
   client.println("<button onclick=\"setEffect(-1)\">Off</button>");
   client.println("<br />");
   client.println("<button onclick=\"setCycle()\">Cycle</button>");

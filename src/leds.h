@@ -5,6 +5,7 @@
 namespace led {
 
   enum Effect {
+    STEADY,
     BREATHE,
     RAIN,
   };

@@ -59,6 +59,13 @@ static CHSV getColor(uint32_t t) {
     return config.base_color;
   }
 }
+static void steady(uint32_t t,
+    CRGBArray<NUM_LEDS> leds,
+    Configuration config) {
+  for(int i = 0; i < NUM_LEDS; i++) {
+    leds[i] = getColor(t);
+  }
+}
 
 static void breathe(uint32_t t,
     CRGBArray<NUM_LEDS> leds,
@@ -132,6 +139,9 @@ void setup(uint32_t time) {
 void loop(){
   const uint32_t t = (millis() + timeOffset) / 8;
   switch (config.effect) {
+    case STEADY: 
+      steady(t, leds, config);
+      break;
     case BREATHE: 
       breathe(t, leds, config);
       break;
