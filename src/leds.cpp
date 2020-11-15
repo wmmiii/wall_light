@@ -1,13 +1,20 @@
 #include "leds.h"
 
+#define BOARD_CURRENT_MA 200
+#define MAX_DRAW_MA 2000
+
 #define DATA_PIN 14
 #define CLOCK_PIN 12
 
 #define WIDTH 13
 #define HEIGHT 13
-
 #define CENTER_X 6
 #define CENTER_Y 5.5
+
+// #define WIDTH 83
+// #define HEIGHT 3
+// #define CENTER_X 41
+// #define CENTER_Y 1
 
 #define NUM_LEDS (WIDTH * HEIGHT)
 
@@ -67,7 +74,7 @@ static void breathe(uint32_t t,
 
     double dist = sqrt(cX * cX + cY * cY);
     double brightness = sin((dist * 2.0 + -t / 128.0));
-    uint8_t value = max(brightness * 128.0 - 32.0, 0.0);
+    uint8_t value = max(brightness * 255.0, 0.0);
 
     CHSV color = getColor(t);
     color.value = value;
@@ -112,13 +119,18 @@ static void rain(uint32_t time,
   }
 }
 
-void setup() {
+uint32_t timeOffset;
+
+void setup(uint32_t time) {
+  FastLED.setMaxPowerInVoltsAndMilliamps(5, MAX_DRAW_MA - BOARD_CURRENT_MA);
   FastLED.delay(16);
   FastLED.addLeds<APA102, DATA_PIN, CLOCK_PIN, BGR>(leds, NUM_LEDS);
+
+  timeOffset = time;
 }
 
 void loop(){
-  const uint32_t t = millis() / 8;
+  const uint32_t t = (millis() + timeOffset) / 8;
   switch (config.effect) {
     case BREATHE: 
       breathe(t, leds, config);
@@ -127,9 +139,8 @@ void loop(){
       rain(t, leds, config);
       break;
     default:
-      for (int i = 0; i < NUM_LEDS; ++i) {
-        leds[i].fadeToBlackBy(16);
-      }
+      delay(100);
+      break;
   }
   FastLED.delay(8);
 }
@@ -137,6 +148,9 @@ void loop(){
 
 void set_effect(Effect effect) {
   config.effect = effect;
+  if (effect < 0) {
+    FastLED.clear();
+  }
 }
 
 void set_cycle() {

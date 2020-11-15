@@ -5,11 +5,13 @@
 
 void setup() {
   Serial.begin(9600);
-  Serial.print("LED Setup...");
-  led::setup();
-  Serial.print("Wifi Setup...");
-  wifi::setup();
-  Serial.print("Setup complete.");
+  Serial.println("Wifi Setup...");
+  long time = wifi::setup();
+  Serial.print("Current Time: ");
+  Serial.println(time);
+  Serial.println("LED Setup...");
+  led::setup(time);
+  Serial.println("Setup complete.");
 }
 
 void loop(){

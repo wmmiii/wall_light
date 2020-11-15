@@ -15,7 +15,7 @@ namespace led {
     Effect effect = BREATHE;
   };
 
-  void setup();
+  void setup(uint32_t time);
 
   void loop();
 

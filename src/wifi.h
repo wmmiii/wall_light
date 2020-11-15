@@ -2,8 +2,7 @@
 
 namespace wifi {
 
-  void setup();
+  long setup();
 
   void loop();
-
 }

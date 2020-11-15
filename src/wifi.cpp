@@ -1,7 +1,9 @@
 #include "leds.h"
 #include "wifi.h"
 
+#include <NTPClient.h>
 #include <WiFi.h>
+#include <WiFiUdp.h>
 
 namespace wifi {
 
@@ -9,8 +11,15 @@ namespace wifi {
 const char* ssid = "ssid";
 const char* password = "password";
 
+IPAddress timeServerIP;
+const char* ntpServerName = "0.us.pool.ntp.org";
+
 // Set web server port number to 80
 WiFiServer server(80);
+
+// Define NTP Client to get time
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP);
 
 // Variable to store the HTTP request
 String header;
@@ -26,7 +35,7 @@ unsigned long previousTime = 0;
 // Define timeout time in milliseconds (example: 2000ms = 2s)
 const long timeoutTime = 2000;
 
-void setup() {
+long setup() {
 
   // Connect to Wi-Fi network with SSID and password
   Serial.print("Connecting to ");
@@ -39,9 +48,16 @@ void setup() {
   // Print local IP address and start web server
   Serial.println("");
   Serial.println("WiFi connected.");
-  Serial.println("IP address: ");
+  Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
+  timeClient.begin();
+  while(!timeClient.update()) {
+    timeClient.forceUpdate();
+  }
+  long time = timeClient.getEpochTime() * 1000;
+  timeClient.end();
   server.begin();
+  return time;
 }
 
 void sendIndex(WiFiClient client) {
@@ -92,7 +108,8 @@ void sendIndex(WiFiClient client) {
   client.println("<body><h1>Wall Light</h1>");
   client.println("<button onclick=\"setEffect(0)\">Breathe</button>");
   client.println("<button onclick=\"setEffect(1)\">Rain</button>");
-  client.println("<button onclick=\"setCycle()\">Cycle</button>");
+  client.println("<button onclick=\"setEffect(-1)\">Off</button>");
+  client.println("<br />");
   client.println("<button onclick=\"setCycle()\">Cycle</button>");
   client.println("<button onclick=\"setHue(0)\">Red</button>");
   client.println("<button onclick=\"setHue(32)\">Orange</button>");
@@ -104,7 +121,7 @@ void sendIndex(WiFiClient client) {
   client.println("</body></html>");
 }
 
-void loop(){
+void loop() {
   WiFiClient client = server.available();   // Listen for incoming clients
 
   if (client) {                             // If a new client connects,
