@@ -173,4 +173,9 @@ void set_hue(uint8_t hue) {
   config.cycle = false;
 }
 
+void set_hsv(uint8_t hue, uint8_t saturation, uint8_t value) {
+  config.base_color = CHSV(hue, saturation, value);
+  config.cycle = false;
+}
+
 } // namespace led

@@ -69,6 +69,7 @@ void sendIndex(WiFiClient client) {
   // Display the HTML web page
   client.println("<!DOCTYPE html><html>");
   client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+  client.println("<title>Light</title>");
 
   client.println(
     "<style>\n"
@@ -79,33 +80,11 @@ void sendIndex(WiFiClient client) {
     "</style>\n"
   );
 
-  client.println(
-    "<script>\n"
-    "function setEffect(effect) {\n"
-    "  fetch(`/effect/${effect}`, {\n"
-    "    method: 'PUT'\n"
-    "  });\n"
-    "}\n"
-    "\n"
-    "function setHue(hue) {\n"
-    "  fetch(`/hue/${hue}`, {\n"
-    "    method: 'PUT'\n"
-    "  });\n"
-    "}\n"
-    "\n"
-    "function setCycle(hue) {\n"
-    "  fetch(`/cycle`, {\n"
-    "    method: 'PUT'\n"
-    "  });\n"
-    "}\n"
-    "</script>\n"
-  );
+  client.println("<script src=\"https://wmmiii.github.io/wall_light/light.js\"></script>\n");
   client.println("</head>");
-  // CSS to style the on/off buttons 
-  // Feel free to change the background-color and font-size attributes to fit your preferences
   
   // Web Page Heading
-  client.println("<body><h1>Wall Light</h1>");
+  client.println("<body><h1>Light</h1>");
   client.println("<button onclick=\"setEffect(0)\">Steady</button>");
   client.println("<button onclick=\"setEffect(1)\">Breathe</button>");
   client.println("<button onclick=\"setEffect(2)\">Rain</button>");
@@ -155,6 +134,27 @@ void loop() {
 
               client.println("HTTP/1.1 202 Accepted");
               client.println();
+
+            } else if (header.indexOf("PUT /color/") >= 0 ) {
+              bool error = false;
+              const String delimiter = "-";
+              String s = header.substring(11);
+              int first = s.indexOf(delimiter);
+              int second = s.indexOf(delimiter, first);
+              if (first > 0 && second > 0) {
+                uint8_t hue = s.substring(0, first).toInt();
+                uint8_t saturation = s.substring(first, second).toInt();
+                uint8_t value = s.substring(second).toInt();
+
+                led::set_hsv(hue, saturation, value);
+
+                client.println("HTTP/1.1 202 Accepted");
+                client.println();
+              } else {
+                client.println("HTTP/1.1 400 Bad Request");
+                client.println();
+              }
+
 
             } else if (header.indexOf("PUT /effect") >= 0 ) {
               String hue_string = header.substring(12);

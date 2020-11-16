@@ -25,4 +25,5 @@ namespace led {
   void set_effect(Effect effect);
   void set_cycle();
   void set_hue(uint8_t hue);
+  void set_hsv(uint8_t hue, uint8_t saturation, uint8_t value);
 }
