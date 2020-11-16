@@ -9,10 +9,9 @@
           Cycle color
     </label>
     <color-picker
-        :startColor="hex"
-        :value="hex"
+        :value="this.color.hue()"
         :disabled="light.cycle"
-        @color-change="onColor">
+        @input="onColor">
     </color-picker>
   </div>
 </template>
@@ -20,7 +19,7 @@
 <script lang="ts">
 import Color from 'color';
 import Vue from 'vue';
-import ColorPicker from 'vue-color-picker-wheel';
+import ColorPicker from '@radial-color-picker/vue-color-picker';
 import { Component, Prop } from 'vue-property-decorator';
 
 import { Light } from './Light';
@@ -36,7 +35,9 @@ export default class LightInterface extends Vue {
 
   get color(): Color {
     return Color()
-      .hsv(this.light.h, this.light.s, this.light.v);
+      .hsv(this.light.h * 360 / 255,
+          this.light.s * 100 / 255,
+          this.light.v * 100 / 255);
   }
 
   get hex(): string {
@@ -61,14 +62,14 @@ export default class LightInterface extends Vue {
     }
   }
 
-  onColor(hex: string): void {
+  onColor(hue: number): void {
     if (this.inFlight) {
-      this.next = () => this.onColor(hex);
+      this.next = () => this.onColor(hue);
       return;
     }
 
     this.inFlight = true;
-    setColor(this.light.address, Color(hex))
+    setColor(this.light.address, Color().hsv(hue, 100, 0))
         .then(info => this.$emit('change', info))
         .catch().then(() => this.releaseInFlight());
   }
@@ -87,6 +88,7 @@ Vue.component('color-picker', ColorPicker);
 </script>
 
 <style lang="scss">
+@import '~@radial-color-picker/vue-color-picker/dist/vue-color-picker.min.css';
 
 .light-interface {
   background-color: #444;

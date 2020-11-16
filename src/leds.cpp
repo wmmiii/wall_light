@@ -170,7 +170,6 @@ void set_effect(Effect effect) {
 }
 
 void set_cycle() {
-  config.base_color = CHSV(0, 0, 0);
   config.cycle = true;
 }
 

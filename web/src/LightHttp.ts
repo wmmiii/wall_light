@@ -3,7 +3,7 @@ import { Light, LightInfo } from './Light';
 
 export function scanLocalNetwork(): Array<Promise<Light | null>> {
   const lightsPromise: Array<Promise<Light | null>> = [];
-  for (let i = 208; i < 209; i++) {
+  for (let i = 0; i < 255; i++) {
     const address = `http://10.0.0.${i}`;
     const query =  fetch(`${address}/lightInfo`, {
       method: 'GET',
@@ -47,9 +47,9 @@ export async function setCycle(address: string): Promise<LightInfo> {
 }
 
 export async function setColor(address: string, color: Color): Promise<LightInfo> {
-  const h = Math.floor(color.hue());
-  const s = Math.floor(color.saturationv());
-  const v = Math.floor(color.value());
+  const h = Math.floor(color.hue() * 255 / 360);
+  const s = Math.floor(color.saturationv() * 255 / 100);
+  const v = Math.floor(color.value() * 255 / 100);
   return fetch(`${address}/color/${h}-${s}-${v}`, {
     method: 'PUT',
     mode: 'cors',

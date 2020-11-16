@@ -176,8 +176,8 @@ void loop() {
               int third = s.indexOf(" HTTP/1.1");
               if (first > 0 && second > 0) {
                 uint8_t hue = s.substring(0, first).toInt();
-                uint8_t saturation = s.substring(first, second).toInt();
-                uint8_t value = s.substring(second, third).toInt();
+                uint8_t saturation = s.substring(first + 1, second).toInt();
+                uint8_t value = s.substring(second + 1, third).toInt();
 
                 led::set_hsv(hue, saturation, value);
 
