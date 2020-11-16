@@ -1,3 +1,4 @@
+#include "config.h"
 #include "leds.h"
 #include "wifi.h"
 
@@ -101,6 +102,22 @@ void sendIndex(WiFiClient client) {
   client.println("</body></html>");
 }
 
+String getInfoJson() {
+  #if defined BED
+  String name = "Bed";
+  #elif defined BOX
+  String name = "Box";
+  #endif
+  led::Configuration config = led::get_config();
+  return "{\"name\":\"" + name + "\","
+      "\"effect\":" + String(config.effect) + ","
+      "\"h\":" + String(config.base_color.h) + ","
+      "\"s\":" + String(config.base_color.s) + ","
+      "\"v\":" + String(config.base_color.v) + ","
+      "\"cycle\":" + (config.cycle ? "true" : "false") + "}";
+      
+}
+
 void loop() {
   WiFiClient client = server.available();   // Listen for incoming clients
 
@@ -122,6 +139,26 @@ void loop() {
 
             if (header.indexOf("GET / HTTP") >=0) {
               sendIndex(client);
+            } else if (header.indexOf("GET /lightInfo HTTP") >=0) {
+              String body = getInfoJson();
+
+              client.println("HTTP/1.1 200 OK");
+              client.println("Access-Control-Allow-Origin: *");
+              client.println("Content-type:application/json");
+              client.println("Content-Length: " + String(body.length() + 2));
+              client.println("Connection: close");
+              client.println();
+              client.print(body);
+
+            } else if (header.indexOf("OPTIONS /lightInfo HTTP") >=0) {
+              Serial.println("OPTIONS");
+              while (client.available()) {
+                Serial.println(client.read());
+              }
+
+              client.println("HTTP/1.1 204 No Content");
+              client.println();
+
             } else if (header.indexOf("PUT /cycle") >= 0) {
               led::set_cycle();
 
@@ -136,7 +173,6 @@ void loop() {
               client.println();
 
             } else if (header.indexOf("PUT /color/") >= 0 ) {
-              bool error = false;
               const String delimiter = "-";
               String s = header.substring(11);
               int first = s.indexOf(delimiter);

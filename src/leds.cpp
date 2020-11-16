@@ -1,3 +1,4 @@
+#include "config.h"
 #include "leds.h"
 
 #define BOARD_CURRENT_MA 200
@@ -6,15 +7,17 @@
 #define DATA_PIN 14
 #define CLOCK_PIN 12
 
-#define WIDTH 13
-#define HEIGHT 13
-#define CENTER_X 6
-#define CENTER_Y 5.5
-
-// #define WIDTH 83
-// #define HEIGHT 3
-// #define CENTER_X 41
-// #define CENTER_Y 1
+#if defined BOX
+const uint8_t WIDTH = 13;
+const uint8_t HEIGHT = 13;
+const uint8_t CENTER_X = 6;
+const uint8_t CENTER_Y = 5.5;
+#elif defined BED
+const uint8_t WIDTH = 83;
+const uint8_t HEIGHT = 3;
+const uint8_t CENTER_X = 41;
+const uint8_t CENTER_Y = 1;
+#endif
 
 #define NUM_LEDS (WIDTH * HEIGHT)
 
@@ -155,6 +158,9 @@ void loop(){
   FastLED.delay(8);
 }
 
+Configuration get_config() {
+  return config;
+}
 
 void set_effect(Effect effect) {
   config.effect = effect;

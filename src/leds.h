@@ -22,6 +22,8 @@ namespace led {
 
   void configuration(Configuration config);
 
+  Configuration get_config();
+
   void set_effect(Effect effect);
   void set_cycle();
   void set_hue(uint8_t hue);

@@ -1,11 +1,13 @@
 {
   "compilerOptions": {
     "allowJs": false,
+    "experimentalDecorators": true,
     "module": "es6",
     "moduleResolution": "node",
     "noImplicitAny": true,
     "outDir": "../docs",
     "strict": true,
+    "strictNullChecks": true,
     "target": "es5",
   }
 }

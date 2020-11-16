@@ -10,7 +10,8 @@
   "author": "",
   "license": "",
   "dependencies": {
-    "vue": "^2.6.12"
+    "vue": "^2.6.12",
+    "vue-property-decorator": "7.0.0"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^6.3.1",
