@@ -102,20 +102,27 @@ void sendIndex(WiFiClient client) {
   client.println("</body></html>");
 }
 
-String getInfoJson() {
+void sendInfo(WiFiClient client) {
   #if defined BED
   String name = "Bed";
   #elif defined BOX
   String name = "Box";
   #endif
   led::Configuration config = led::get_config();
-  return "{\"name\":\"" + name + "\","
+  String body = "{\"name\":\"" + name + "\","
       "\"effect\":" + String(config.effect) + ","
       "\"h\":" + String(config.base_color.h) + ","
       "\"s\":" + String(config.base_color.s) + ","
       "\"v\":" + String(config.base_color.v) + ","
       "\"cycle\":" + (config.cycle ? "true" : "false") + "}";
-      
+  
+  client.println("HTTP/1.1 200 OK");
+  client.println("Access-Control-Allow-Origin: *");
+  client.println("Content-type:application/json");
+  client.println("Content-Length: " + String(body.length() + 2));
+  client.println("Connection: close");
+  client.println();
+  client.print(body);
 }
 
 void loop() {
@@ -137,55 +144,44 @@ void loop() {
           // that's the end of the client HTTP request, so send a response:
           if (currentLine.length() == 0) {
 
-            if (header.indexOf("GET / HTTP") >=0) {
+            if (header.indexOf("GET / HTTP") >= 0) {
               sendIndex(client);
-            } else if (header.indexOf("GET /lightInfo HTTP") >=0) {
-              String body = getInfoJson();
 
-              client.println("HTTP/1.1 200 OK");
-              client.println("Access-Control-Allow-Origin: *");
-              client.println("Content-type:application/json");
-              client.println("Content-Length: " + String(body.length() + 2));
-              client.println("Connection: close");
-              client.println();
-              client.print(body);
-
-            } else if (header.indexOf("OPTIONS /lightInfo HTTP") >=0) {
-              Serial.println("OPTIONS");
-              while (client.available()) {
-                Serial.println(client.read());
-              }
-
+            } else if (header.indexOf("OPTIONS") >= 0) {
               client.println("HTTP/1.1 204 No Content");
+              client.println("Allow: OPTIONS, GET, PUT");
+              client.println("Access-Control-Allow-Methods: OPTIONS, GET, PUT");
+              client.println("Access-Control-Allow-Origin: *");
               client.println();
+
+            } else if (header.indexOf("GET /lightInfo HTTP") >= 0) {
+              sendInfo(client);
 
             } else if (header.indexOf("PUT /cycle") >= 0) {
               led::set_cycle();
 
-              client.println("HTTP/1.1 202 Accepted");
-              client.println();
+              sendInfo(client);
 
             } else if (header.indexOf("PUT /hue") >= 0 ) {
               String hue_string = header.substring(9);
               led::set_hue(hue_string.toInt());
 
-              client.println("HTTP/1.1 202 Accepted");
-              client.println();
+              sendInfo(client);
 
             } else if (header.indexOf("PUT /color/") >= 0 ) {
               const String delimiter = "-";
               String s = header.substring(11);
               int first = s.indexOf(delimiter);
-              int second = s.indexOf(delimiter, first);
+              int second = s.indexOf(delimiter, first + 1);
+              int third = s.indexOf(" HTTP/1.1");
               if (first > 0 && second > 0) {
                 uint8_t hue = s.substring(0, first).toInt();
                 uint8_t saturation = s.substring(first, second).toInt();
-                uint8_t value = s.substring(second).toInt();
+                uint8_t value = s.substring(second, third).toInt();
 
                 led::set_hsv(hue, saturation, value);
 
-                client.println("HTTP/1.1 202 Accepted");
-                client.println();
+                sendInfo(client);
               } else {
                 client.println("HTTP/1.1 400 Bad Request");
                 client.println();

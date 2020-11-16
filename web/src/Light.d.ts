@@ -1,9 +1,9 @@
 export interface Light extends LightInfo {
-  address: String;
+  address: string;
 }
 
 export interface LightInfo {
-  name: String;
+  name: string;
   effect: number;
   h: number;
   s: number;
