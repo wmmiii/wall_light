@@ -1,1 +1,0 @@
-function setEffect(e){fetch("/effect/"+e,{method:"PUT"})}function setHue(e){fetch("/hue/"+e,{method:"PUT"})}function setHSV(e,t,c){fetch(`/hue/${e}-${t}-${c}`,{method:"PUT"})}function setCycle(e){fetch("/cycle",{method:"PUT"})}

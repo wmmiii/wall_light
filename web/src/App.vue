@@ -1,13 +1,26 @@
 <template>
   <div class="app">
     <h1>Light Controller</h1>
-    <p>{{ status }}</p>
-    <button :disabled="!scanComplete" @click="scan">Rescan</button>
-    <ul>
-      <li v-for="light in lights" :key="light.address">
-        <light-interface :light="light" @change="info => update(light, info)" />
-      </li>
-    </ul>
+    <template v-if="secure">
+      <p>
+        This controller must be used on an insecure, local connection.
+        Try accessing this webpage via the IP address of a LED controller.
+      </p>
+      <p class="quiet">
+        The LED controllers do not support TLS. To prevent mixed-content browser
+        errors both this page and the LED controller APIs must be accessed via
+        HTTP.
+      </p>
+    </template>
+    <template v-else>
+      <p>{{ status }}</p>
+      <button :disabled="!scanComplete" @click="scan">Rescan</button>
+      <ul>
+        <li v-for="light in lights" :key="light.address">
+          <light-interface :light="light" @change="info => update(light, info)" />
+        </li>
+      </ul>
+    </template>
   </div>
 </template>
 
@@ -32,6 +45,10 @@ export default class Index extends Vue {
     } else {
       return "Scanning...";
     }
+  }
+
+  get secure(): boolean {
+    return window.location.protocol === 'https:';
   }
 
   mounted() {
@@ -86,6 +103,10 @@ h1 {
 
   li {
     margin-bottom: 1em;
+  }
+
+  .quiet {
+    color: #aaa;
   }
 }
 

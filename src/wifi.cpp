@@ -62,44 +62,72 @@ long setup() {
 }
 
 void sendIndex(WiFiClient client) {
-  client.println("HTTP/1.1 200 OK");
-  client.println("Content-type:text/html");
-  client.println("Connection: close");
-  client.println();
+  String httpBody =
+    "HTTP/1.1 200 OK"
+    "Content-type:text/html"
+    "Connection: close"
 
-  // Display the HTML web page
-  client.println("<!DOCTYPE html><html>");
-  client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-  client.println("<title>Light</title>");
+    // Display the HTML web page
+    "<!DOCTYPE html><html>"
+    "<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+    "<title>Light</title>"
+      "<style>\n"
+      "button {\n"
+      "  display: block;\n"
+      "  padding: 1em;\n"
+      "}\n"
+      "</style>\n"
 
-  client.println(
-    "<style>\n"
-    "button {\n"
-    "  display: block;\n"
-    "  padding: 1em;\n"
-    "}\n"
-    "</style>\n"
-  );
+    "<script>"
+      "function setEffect(effect) {"
+      "  fetch(`/effect/${effect}`, {"
+      "    method: 'PUT'"
+      "  });"
+      "}"
+      ""
+      "function setHue(hue) {"
+      "  fetch(`/hue/${hue}`, {"
+      "    method: 'PUT'"
+      "  });"
+      "}"
+      ""
+      "function setHSV(h, s, v) {"
+      "  fetch(`/hue/${h}-${s}-${v}`, {"
+      "    method: 'PUT'"
+      "  });"
+      "}"
+      ""
+      "function setCycle(hue) {"
+      "  fetch(`/cycle`, {"
+      "    method: 'PUT'"
+      "  });"
+      "}"
+    "</script>\n"
+    "</head>"
+    
+    // Web Page Heading
+    "<body>"
+      "<div id=\"app\">"
+        "<h1>Light</h1>"
+        "<p>Could not load app, falling back to basic interface.</p>"
+        "<button onclick=\"setEffect(0)\">Steady</button>"
+        "<button onclick=\"setEffect(1)\">Breathe</button>"
+        "<button onclick=\"setEffect(2)\">Rain</button>"
+        "<button onclick=\"setEffect(-1)\">Off</button>"
+        "<br />"
+        "<button onclick=\"setCycle()\">Cycle</button>"
+        "<button onclick=\"setHue(0)\">Red</button>"
+        "<button onclick=\"setHue(32)\">Orange</button>"
+        "<button onclick=\"setHue(64)\">Yellow</button>"
+        "<button onclick=\"setHue(96)\">Green</button>"
+        "<button onclick=\"setHue(128)\">Cyan</button>"
+        "<button onclick=\"setHue(160)\">Blue</button>"
+        "<button onclick=\"setHue(208)\">Magenta</button>"
+      "</div>"
+      "<script src=\"https://wmmiii.github.io/wall_light/index.js\"></script>"
+    "</body></html>";
 
-  client.println("<script src=\"https://wmmiii.github.io/wall_light/light.js\"></script>\n");
-  client.println("</head>");
-  
-  // Web Page Heading
-  client.println("<body><h1>Light</h1>");
-  client.println("<button onclick=\"setEffect(0)\">Steady</button>");
-  client.println("<button onclick=\"setEffect(1)\">Breathe</button>");
-  client.println("<button onclick=\"setEffect(2)\">Rain</button>");
-  client.println("<button onclick=\"setEffect(-1)\">Off</button>");
-  client.println("<br />");
-  client.println("<button onclick=\"setCycle()\">Cycle</button>");
-  client.println("<button onclick=\"setHue(0)\">Red</button>");
-  client.println("<button onclick=\"setHue(32)\">Orange</button>");
-  client.println("<button onclick=\"setHue(64)\">Yellow</button>");
-  client.println("<button onclick=\"setHue(96)\">Green</button>");
-  client.println("<button onclick=\"setHue(128)\">Cyan</button>");
-  client.println("<button onclick=\"setHue(160)\">Blue</button>");
-  client.println("<button onclick=\"setHue(208)\">Magenta</button>");
-  client.println("</body></html>");
+  client.println(httpBody);
 }
 
 void sendInfo(WiFiClient client) {
