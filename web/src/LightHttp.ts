@@ -3,12 +3,15 @@ import { Light, LightInfo } from './Light';
 
 export function scanLocalNetwork(): Array<Promise<Light | null>> {
   const lightsPromise: Array<Promise<Light | null>> = [];
-  for (let i = 0; i < 255; i++) {
+  const i = 208; // for (let i = 0; i < 255; i++) {
     const address = `http://10.0.0.${i}`;
+    const abort = new AbortController();
+    const id = setTimeout(() => abort.abort(), 5000);
     const query =  fetch(`${address}/lightInfo`, {
       method: 'GET',
       mode: 'cors',
       cache: 'no-cache',
+      signal: abort.signal,
     })
     .then(res => {
       if (res.ok) {
@@ -25,7 +28,7 @@ export function scanLocalNetwork(): Array<Promise<Light | null>> {
     })
     .catch(() => null);
     lightsPromise.push(query);
-  }
+  // }
 
   return lightsPromise;
 }
