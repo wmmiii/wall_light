@@ -13,7 +13,7 @@ namespace led {
   struct Configuration {
     CHSV base_color = CHSV(0, 0, 0);
     bool cycle = true;
-    Effect effect = BREATHE;
+    Effect effect = STEADY;
   };
 
   void setup(uint32_t time);

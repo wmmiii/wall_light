@@ -192,7 +192,7 @@ void loop() {
               sendInfo(client);
 
             } else if (header.indexOf("PUT /hue") >= 0 ) {
-              String hue_string = header.substring(9);
+              String hue_string = header.substring(9, header.indexOf(" HTTP"));
               led::set_hue(hue_string.toInt());
 
               sendInfo(client);
@@ -218,9 +218,8 @@ void loop() {
 
 
             } else if (header.indexOf("PUT /effect") >= 0 ) {
-              String hue_string = header.substring(12);
-
-              led::set_effect(static_cast<led::Effect>(hue_string.toInt()));
+              String effect_string = header.substring(12, header.indexOf(" HTTP"));
+              led::set_effect(static_cast<led::Effect>(effect_string.toInt()));
 
               sendInfo(client);
 
