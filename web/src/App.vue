@@ -133,8 +133,8 @@ h1 {
     display: grid;
     flex: 1;
     gap: 1em;
-    grid-template-columns: repeat(auto-fit, minmax(30em, 1fr));
-    justify-content: space-evenly;
+    grid-template-columns: repeat(auto-fit, minmax(m#{i}n(30em, 100%), 1fr));
+    justify-content: start;
     overflow-y: auto;
     padding: 1em;
   }

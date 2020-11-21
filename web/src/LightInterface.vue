@@ -157,6 +157,10 @@ Vue.component('light-interface', LightInterface);
   border: none;
   box-shadow: none;
 }
+
+.md-input {
+  width: 100%;
+}
 </style>
 
 <style lang="scss" scoped>
