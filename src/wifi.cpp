@@ -222,8 +222,7 @@ void loop() {
 
               led::set_effect(static_cast<led::Effect>(hue_string.toInt()));
 
-              client.println("HTTP/1.1 202 Accepted");
-              client.println();
+              sendInfo(client);
 
             } else {
               client.println("HTTP/1.1 404 Not Found");

@@ -1,32 +1,68 @@
 <template>
-  <div class="light-interface">
-    <h1>{{ light.name }}</h1>
-    <label>
-      <input
-          type="checkbox"
-          :value="light.cycle"
-          @input="onCycle" />
-          Cycle color
-    </label>
-    <color-picker
-        :value="this.color.hue()"
-        :disabled="light.cycle"
-        @input="onColor">
-    </color-picker>
-  </div>
+  <md-card class="light-interface">
+    <md-card-header class="name">
+      <md-card-header-text>
+        <div class="md-title">
+          {{light.name}}
+        </div>
+      </md-card-header-text>
+      <md-switch
+          color="p-primary"
+          :value="light.effect === -1"
+          @change="onToggle" />
+    </md-card-header>
+
+    <md-card-content class="content">
+      <md-field>
+        <md-select
+            name="effect"
+            :value="light.effect"
+            @input="onEffect">
+          <md-option :value="Effect.OFF">Off</md-option>
+          <md-option :value="Effect.STEADY">Steady</md-option>
+          <md-option :value="Effect.BREATHE">Breathe</md-option>
+          <md-option :value="Effect.RAIN">Rain</md-option>
+        </md-select>
+      </md-field>
+      <md-switch
+          class="cycle"
+          :value="!light.cycle"
+          @change="onCycle">
+            Cycle color
+      </md-switch>
+      <color-picker
+          variant="persistent"
+          :value="this.color.hue()"
+          :disabled="light.cycle"
+          @input="onColor">
+      </color-picker>
+    </md-card-content>
+
+  </md-card>
 </template>
 
 <script lang="ts">
 import Color from 'color';
 import Vue from 'vue';
+import { MdCard, MdField, MdList, MdMenu, MdSwitch } from 'vue-material/dist/components';
 import ColorPicker from '@radial-color-picker/vue-color-picker';
 import { Component, Prop } from 'vue-property-decorator';
 
-import { Light } from './Light';
-import { setColor, setCycle } from './LightHttp';
+import { Effect, Light, LightInfo } from './Light';
+import { setColor, setCycle, setEffect } from './LightHttp';
+
+Vue.use(MdCard);
+Vue.use(MdField);
+Vue.use(MdList);
+Vue.use(MdMenu);
+Vue.use(MdSwitch);
+
+Vue.component('color-picker', ColorPicker);
 
 @Component
 export default class LightInterface extends Vue {
+  readonly Effect = Effect;
+
   @Prop({ required: true })
   light!: Light;
 
@@ -44,14 +80,42 @@ export default class LightInterface extends Vue {
     return this.color.hex();
   }
 
-  onCycle(event: InputEvent): void {
+  onToggle(on: boolean): void {
     if (this.inFlight) {
-      this.next = () => this.onCycle(event);
+      this.next = () => this.onToggle(on);
+      return;
+    }
+
+    let result: Promise<LightInfo>
+    if (on) {
+      result = setEffect(this.light.address, Effect.STEADY);
+    } else {
+      result = setEffect(this.light.address, Effect.OFF);
+    }
+    result.then(info => this.$emit('change', info))
+          .catch().then(() => this.releaseInFlight());
+  }
+
+  onEffect(effect: Effect): void {
+    if (this.inFlight) {
+      this.next = () => this.onEffect(effect);
       return;
     }
 
     this.inFlight = true;
-    if ((event.target as HTMLInputElement).checked) {
+    setEffect(this.light.address, effect)
+        .then(info => this.$emit('change', info))
+        .catch().then(() => this.releaseInFlight());
+  }
+
+  onCycle(cycle: boolean): void {
+    if (this.inFlight) {
+      this.next = () => this.onCycle(cycle);
+      return;
+    }
+
+    this.inFlight = true;
+    if (cycle) {
       setCycle(this.light.address)
           .then(info => this.$emit('change', info))
           .catch().then(() => this.releaseInFlight());
@@ -84,17 +148,40 @@ export default class LightInterface extends Vue {
 }
 
 Vue.component('light-interface', LightInterface);
-Vue.component('color-picker', ColorPicker);
 </script>
 
 <style lang="scss">
 @import '~@radial-color-picker/vue-color-picker/dist/vue-color-picker.min.css';
 
-.light-interface {
-  background-color: #444;
-  border-radius: 1em;
-  display: block;
-  padding: 1em;
+.rcp__well {
+  border: none;
+  box-shadow: none;
 }
+</style>
 
+<style lang="scss" scoped>
+.content {
+  align-items: start;
+  column-gap: 1em;
+  display: grid;
+  grid-template-columns: 1fr 10em;
+  row-gap: 1em;
+
+  .md-field {
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+  }
+
+  .md-switch {
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+  }
+
+  .rcp {
+    grid-column: 2 / 3;
+    grid-row: 1 / 3;
+    height: 10em;
+    width: 10em;
+  }
+}
 </style>

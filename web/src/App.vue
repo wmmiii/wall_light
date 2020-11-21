@@ -1,5 +1,6 @@
 <template>
   <div class="app">
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400,500,700,400italic|Material+Icons">
     <h1>Light Controller</h1>
     <template v-if="secure">
       <p>
@@ -13,13 +14,20 @@
       </p>
     </template>
     <template v-else>
-      <p>{{ status }}</p>
-      <button :disabled="!scanComplete" @click="scan">Rescan</button>
-      <ul>
-        <li v-for="light in lights" :key="light.address">
-          <light-interface :light="light" @change="info => update(light, info)" />
-        </li>
-      </ul>
+      <div class="status">
+        <md-button :disabled="!scanComplete" @click="scan">
+          {{ scanComplete ? 'Rescan' : 'Scanning' }}
+        </md-button>
+        <md-progress-bar v-if="!scanComplete" md-mode="indeterminate"></md-progress-bar>
+      </div>
+      <div class="layout">
+        <light-interface
+            class="light"
+            v-for="light in lights"
+            :key="light.address"
+            :light="light"
+            @change="info => update(light, info)" />
+      </div>
     </template>
   </div>
 </template>
@@ -28,24 +36,21 @@
 import { Component } from 'vue-property-decorator';
 import Vue from 'vue';
 
+import 'vue-material/dist/vue-material.min.css';
+import 'vue-material/dist/theme/default-dark.css';
+import { MdButton, MdProgress } from 'vue-material/dist/components';
+
 import { Light, LightInfo } from './Light';
 import { scanLocalNetwork } from './LightHttp';
 import './LightInterface';
+
+Vue.use(MdButton);
+Vue.use(MdProgress);
 
 @Component
 export default class Index extends Vue {
   lights: Light[] = [];
   scanComplete = false;
-
-  get status(): string {
-    if (this.scanComplete && this.lights.length == 0) {
-      return "No devices found.";
-    } else if (this.scanComplete) {
-      return "Scan complete.";
-    } else {
-      return "Scanning...";
-    }
-  }
 
   get secure(): boolean {
     return window.location.protocol === 'https:';
@@ -78,16 +83,12 @@ export default class Index extends Vue {
 </script>
 
 <style lang="scss">
-
-html {
-  background-color: #222;
-  color: #fff;
-}
-
+html,
 body {
-  font-family: Sans-Serif;
-  margin: auto;
-  max-width: 30em;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  width: 100%;
 }
 
 h1 {
@@ -95,19 +96,51 @@ h1 {
 }
 
 .app {
-  ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
 
-  li {
-    margin-bottom: 1em;
+  display: flex;
+  flex-direction: column;
+
+  > * {
+    flex-shrink: 0;
   }
 
   .quiet {
     color: #aaa;
   }
-}
 
+  .status {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    .md-button {
+      flex-shrink: 0;
+    }
+
+    .md-progress-bar {
+      flex: 1;
+      margin-right: 2em;
+    }
+  }
+
+  .layout {
+    align-content: start;
+    display: grid;
+    flex: 1;
+    gap: 1em;
+    grid-template-columns: repeat(auto-fit, minmax(30em, 1fr));
+    justify-content: space-evenly;
+    overflow-y: auto;
+    padding: 1em;
+  }
+
+  .light {
+    max-width: 45em;
+  }
+}
 </style>

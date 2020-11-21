@@ -1,12 +1,12 @@
 import Color from 'color';
-import { Light, LightInfo } from './Light';
+import { Effect, Light, LightInfo } from './Light';
 
 export function scanLocalNetwork(): Array<Promise<Light | null>> {
   const lightsPromise: Array<Promise<Light | null>> = [];
-  const i = 208; // for (let i = 0; i < 255; i++) {
+  for (let i = 0; i < 255; i++) {
     const address = `http://10.0.0.${i}`;
     const abort = new AbortController();
-    const id = setTimeout(() => abort.abort(), 5000);
+    setTimeout(() => abort.abort(), 5000);
     const query =  fetch(`${address}/lightInfo`, {
       method: 'GET',
       mode: 'cors',
@@ -28,9 +28,24 @@ export function scanLocalNetwork(): Array<Promise<Light | null>> {
     })
     .catch(() => null);
     lightsPromise.push(query);
-  // }
+  }
 
   return lightsPromise;
+}
+
+export async function setEffect(address: string, effect: Effect): Promise<LightInfo> {
+  return fetch(`${address}/effect/${effect}`, {
+    method: 'PUT',
+    mode: 'cors',
+    cache: 'no-cache',
+  }).then(res => {
+    const body = res.json();
+    if (res.ok && body != null) {
+      return body;
+    } else {
+      throw Error('Set effect did not succeed!');
+    }
+  });
 }
 
 export async function setCycle(address: string): Promise<LightInfo> {
@@ -42,7 +57,6 @@ export async function setCycle(address: string): Promise<LightInfo> {
     const body = res.json();
     if (res.ok && body != null) {
       return body;
-      return res.json();
     } else {
       throw Error('Set cycle did not succeed!');
     }
