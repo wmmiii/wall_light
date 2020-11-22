@@ -22,6 +22,7 @@
           <md-option :value="Effect.STEADY">Steady</md-option>
           <md-option :value="Effect.BREATHE">Breathe</md-option>
           <md-option :value="Effect.RAIN">Rain</md-option>
+          <md-option :value="Effect.GRADIENT">Gradient</md-option>
         </md-select>
       </md-field>
       <md-switch

@@ -5,9 +5,10 @@
 namespace led {
 
   enum Effect {
-    STEADY,
-    BREATHE,
-    RAIN,
+    STEADY = 0,
+    BREATHE = 1,
+    RAIN = 2,
+    GRADIENT = 3,
   };
 
   struct Configuration {

@@ -19,4 +19,5 @@ export enum Effect {
   STEADY = 0,
   BREATHE = 1,
   RAIN = 2,
+  GRADIENT = 3,
 }

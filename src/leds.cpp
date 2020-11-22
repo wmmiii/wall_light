@@ -129,6 +129,25 @@ static void rain(uint32_t time,
   }
 }
 
+static void gradient(uint32_t t,
+    CRGBArray<NUM_LEDS> leds,
+    Configuration config) {
+  const int16_t DIFFERENCE = 20;
+  CHSV color = getColor(t);
+  uint8_t hue = color.hue;
+  uint8_t high = (hue + DIFFERENCE) % 256;
+  uint8_t low = (hue - DIFFERENCE) % 256;
+  CHSVPalette256 palette(
+      CHSV(low, 255, 96),
+      CHSV(high, 255, 96),
+      CHSV(low, 255, 96));
+  for(int i = 0; i < NUM_LEDS; i++) {
+    int64_t pX = (x(i) << 3) + (t >> 1);
+
+    leds[i] = palette[(uint8_t)(pX % 256)];
+  }
+}
+
 uint32_t timeOffset;
 
 void setup(uint32_t time) {
@@ -150,6 +169,9 @@ void loop(){
       break;
     case RAIN:
       rain(t, leds, config);
+      break;
+    case GRADIENT:
+      gradient(t, leds, config);
       break;
     default:
       delay(100);
