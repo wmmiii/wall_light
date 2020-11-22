@@ -9,8 +9,8 @@
 namespace wifi {
 
 // Replace with your network credentials
-const char* ssid = "ssid";
-const char* password = "password";
+const char* ssid = "ElGatoVolador";
+const char* password = "1024brick789!a";
 
 IPAddress timeServerIP;
 const char* ntpServerName = "0.us.pool.ntp.org";

@@ -148,6 +148,16 @@ static void gradient(uint32_t t,
   }
 }
 
+static void rainbow(uint32_t t,
+    CRGBArray<NUM_LEDS> leds,
+    Configuration config) {
+  for(int i = 0; i < NUM_LEDS; i++) {
+    uint64_t pX = (x(i) << 8) / WIDTH + t;
+
+    leds[i] = CHSV(pX % 256, 255, 96);
+  }
+}
+
 uint32_t timeOffset;
 
 void setup(uint32_t time) {
@@ -172,6 +182,9 @@ void loop(){
       break;
     case GRADIENT:
       gradient(t, leds, config);
+      break;
+    case RAINBOW:
+      rainbow(t, leds, config);
       break;
     default:
       delay(100);
