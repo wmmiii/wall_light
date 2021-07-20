@@ -13,7 +13,7 @@ namespace led {
   };
 
   struct Configuration {
-    CHSV base_color = CHSV(0, 0, 0);
+    CHSV base_color = CHSV(0, 255, 0);
     bool cycle = true;
     Effect effect = STEADY;
   };
