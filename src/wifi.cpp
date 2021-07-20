@@ -199,6 +199,7 @@ void loop() {
 
             } else if (header.indexOf("PUT /color/") >= 0 ) {
               const String delimiter = "-";
+              Serial.println(header);
               String s = header.substring(11);
               int first = s.indexOf(delimiter);
               int second = s.indexOf(delimiter, first + 1);
@@ -207,6 +208,9 @@ void loop() {
                 uint8_t hue = s.substring(0, first).toInt();
                 uint8_t saturation = s.substring(first + 1, second).toInt();
                 uint8_t value = s.substring(second + 1, third).toInt();
+
+                Serial.print("Set value: ");
+                Serial.println(value);
 
                 led::set_hsv(hue, saturation, value);
 

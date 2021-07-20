@@ -216,7 +216,8 @@ void set_hue(uint8_t hue) {
 }
 
 void set_hsv(uint8_t hue, uint8_t saturation, uint8_t value) {
-  config.base_color = CHSV(hue, saturation, value);
+  uint16_t big_value = value * DEFAULT_BRIGHTNESS / 255;
+  config.base_color = CHSV(hue, saturation, static_cast<uint8_t>(big_value));
   config.cycle = false;
 }
 
