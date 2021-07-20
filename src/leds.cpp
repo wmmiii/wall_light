@@ -160,6 +160,28 @@ static void rainbow(uint32_t t, CRGBArray<NUM_LEDS> leds) {
   }
 }
 
+static void spiral(uint32_t t, CRGBArray<NUM_LEDS> leds) {
+  for(int i = 0; i < NUM_LEDS; i++) {
+    int8_t pX = x(i);
+    int8_t pY = y(i);
+
+    double w = WIDTH / 2.0;
+    double h = HEIGHT / 2.0;
+    double cX = (pX - w + 0.5) / w;
+    double cY = (pY - h + 0.5) / h;
+    double dist = sqrt(cX * cX + cY * cY);
+
+    double dist = sqrt(cX * cX + cY * cY);
+    double brightness = sin((dist * 2.0 + -t / 128.0));
+    uint8_t value = map(acos(cX / dist), -PI, PI, 0, 255);
+
+    CHSV color = getColor(t);
+    color.value = value;
+
+    leds[i] = color;
+  }
+}
+
 uint32_t timeOffset;
 
 void setup(uint32_t time) {

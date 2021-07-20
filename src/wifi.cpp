@@ -199,7 +199,6 @@ void loop() {
 
             } else if (header.indexOf("PUT /color/") >= 0 ) {
               const String delimiter = "-";
-              Serial.println(header);
               String s = header.substring(11);
               int first = s.indexOf(delimiter);
               int second = s.indexOf(delimiter, first + 1);

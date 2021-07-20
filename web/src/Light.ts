@@ -21,4 +21,5 @@ export enum Effect {
   RAIN = 2,
   GRADIENT = 3,
   RAINBOW = 4,
+  SPIRAL = 5,
 }
