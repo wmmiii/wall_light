@@ -7,6 +7,8 @@
 #define DATA_PIN 14
 #define CLOCK_PIN 12
 
+#define DEFAULT_BRIGHTNESS 96
+
 #if defined BOX
 const uint8_t WIDTH = 13;
 const uint8_t HEIGHT = 13;
@@ -55,24 +57,30 @@ static inline uint8_t random(uint8_t seed) {
   return (1664525 * seed + 1013904223);
 }
 
+static void printColor(CRGB color) {
+  Serial.print("R: ");
+  Serial.print(color.r);
+  Serial.print("\tG: ");
+  Serial.print(color.g);
+  Serial.print("\tB: ");
+  Serial.println(color.b);
+}
+
 static CHSV getColor(uint32_t t) {
   if (config.cycle) {
-    return CHSV((t / 32) % 256, 255, 96);
+    return CHSV((t / 32) % 256, 255, DEFAULT_BRIGHTNESS);
   } else {
     return config.base_color;
   }
 }
-static void steady(uint32_t t,
-    CRGBArray<NUM_LEDS> leds,
-    Configuration config) {
+static void steady(uint32_t t, CRGBArray<NUM_LEDS> leds) {
+  CHSV color = getColor(t);
   for(int i = 0; i < NUM_LEDS; i++) {
-    leds[i] = getColor(t);
+    leds[i] = color;
   }
 }
 
-static void breathe(uint32_t t,
-    CRGBArray<NUM_LEDS> leds,
-    Configuration config) {
+static void breathe(uint32_t t, CRGBArray<NUM_LEDS> leds) {
   for(int i = 0; i < NUM_LEDS; i++) {
     int8_t pX = x(i);
     int8_t pY = y(i);
@@ -93,9 +101,7 @@ static void breathe(uint32_t t,
   }
 }
 
-static void rain(uint32_t time,
-    CRGBArray<NUM_LEDS> leds,
-    Configuration config) {
+static void rain(uint32_t time, CRGBArray<NUM_LEDS> leds) {
   double t = time / 16.0;
 
   for (int i = 0; i < NUM_LEDS; ++i) {
@@ -112,7 +118,7 @@ static void rain(uint32_t time,
 
     double diff = y - y_floor;
     
-    color.value = max(diff * 96.0, 0.0);
+    color.value = max(diff * DEFAULT_BRIGHTNESS, 0.0);
     if (y_floor % DROPLET_FALL_DIST < HEIGHT) {
       leds[index(x, y_floor % DROPLET_FALL_DIST)] = color;
     }
@@ -121,7 +127,7 @@ static void rain(uint32_t time,
     for (int i = 0; i < TAIL_LENGTH; ++i) {
       double amount = 1.0 - (i + diff) / TAIL_LENGTH;
       uint32_t dY = y_floor - i - 1;
-      color.value = max(amount * 96.0, 0.0);
+      color.value = max(amount * DEFAULT_BRIGHTNESS, 0.0);
       if (dY % DROPLET_FALL_DIST < HEIGHT) {
         leds[index(x, dY % DROPLET_FALL_DIST)] = color;
       }
@@ -129,18 +135,16 @@ static void rain(uint32_t time,
   }
 }
 
-static void gradient(uint32_t t,
-    CRGBArray<NUM_LEDS> leds,
-    Configuration config) {
+static void gradient(uint32_t t, CRGBArray<NUM_LEDS> leds) {
   const int16_t DIFFERENCE = 20;
   CHSV color = getColor(t);
   uint8_t hue = color.hue;
   uint8_t high = (hue + DIFFERENCE) % 256;
   uint8_t low = (hue - DIFFERENCE) % 256;
   CHSVPalette256 palette(
-      CHSV(low, 255, 96),
-      CHSV(high, 255, 96),
-      CHSV(low, 255, 96));
+      CHSV(low, 255, DEFAULT_BRIGHTNESS),
+      CHSV(high, 255, DEFAULT_BRIGHTNESS),
+      CHSV(low, 255, DEFAULT_BRIGHTNESS));
   for(int i = 0; i < NUM_LEDS; i++) {
     int64_t pX = (x(i) << 3) + (t >> 1);
 
@@ -148,13 +152,11 @@ static void gradient(uint32_t t,
   }
 }
 
-static void rainbow(uint32_t t,
-    CRGBArray<NUM_LEDS> leds,
-    Configuration config) {
+static void rainbow(uint32_t t, CRGBArray<NUM_LEDS> leds) {
   for(int i = 0; i < NUM_LEDS; i++) {
     uint64_t pX = (x(i) << 8) / WIDTH + t;
 
-    leds[i] = CHSV(pX % 256, 255, 96);
+    leds[i] = CHSV(pX % 256, 255, DEFAULT_BRIGHTNESS);
   }
 }
 
@@ -172,19 +174,19 @@ void loop(){
   const uint32_t t = (millis() + timeOffset) / 8;
   switch (config.effect) {
     case STEADY: 
-      steady(t, leds, config);
+      steady(t, leds);
       break;
     case BREATHE: 
-      breathe(t, leds, config);
+      breathe(t, leds);
       break;
     case RAIN:
-      rain(t, leds, config);
+      rain(t, leds);
       break;
     case GRADIENT:
-      gradient(t, leds, config);
+      gradient(t, leds);
       break;
     case RAINBOW:
-      rainbow(t, leds, config);
+      rainbow(t, leds);
       break;
     default:
       delay(100);
@@ -209,7 +211,7 @@ void set_cycle() {
 }
 
 void set_hue(uint8_t hue) {
-  config.base_color = CHSV(hue, 255, 0);
+  config.base_color = CHSV(hue, 255, DEFAULT_BRIGHTNESS);
   config.cycle = false;
 }
 

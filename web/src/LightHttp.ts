@@ -66,7 +66,7 @@ export async function setCycle(address: string): Promise<LightInfo> {
 export async function setColor(address: string, color: Color): Promise<LightInfo> {
   const h = Math.floor(color.hue() * 255 / 360);
   const s = Math.floor(color.saturationv() * 255 / 100);
-  const v = Math.floor(color.value() * 255 / 100);
+  const v = Math.floor(255);
   return fetch(`${address}/color/${h}-${s}-${v}`, {
     method: 'PUT',
     mode: 'cors',
