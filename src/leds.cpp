@@ -171,7 +171,6 @@ static void spiral(uint32_t t, CRGBArray<NUM_LEDS> leds) {
     double cY = (pY - h + 0.5) / h;
     double dist = sqrt(cX * cX + cY * cY);
 
-    double dist = sqrt(cX * cX + cY * cY);
     double brightness = sin((dist * 2.0 + -t / 128.0));
     uint8_t value = map(acos(cX / dist), -PI, PI, 0, 255);
 
