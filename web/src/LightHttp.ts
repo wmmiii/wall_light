@@ -4,7 +4,7 @@ import { Effect, Light, LightInfo } from './Light';
 export function scanLocalNetwork(): Array<Promise<Light | null>> {
   const lightsPromise: Array<Promise<Light | null>> = [];
   for (let i = 0; i < 255; i++) {
-    const address = `http://192.168.0.${i}`;
+    const address = `http://10.145.207.${i}`;
     const abort = new AbortController();
     setTimeout(() => abort.abort(), 5000);
     const query =  fetch(`${address}/lightInfo`, {
