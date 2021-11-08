@@ -41,6 +41,11 @@ long setup() {
   // Connect to Wi-Fi network with SSID and password
   Serial.print("Connecting to ");
   Serial.println(ssid);
+  #if defined BOX
+  WiFi.setHostname("boxlight");
+  #elif defined BED
+  WiFi.setHostname("bedlight");
+  #endif
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
