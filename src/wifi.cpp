@@ -8,10 +8,6 @@
 
 namespace wifi {
 
-// Replace with your network credentials
-const char* ssid = "SSID";
-const char* password = "PASSWORD";
-
 IPAddress timeServerIP;
 const char* ntpServerName = "0.us.pool.ntp.org";
 
@@ -40,13 +36,13 @@ long setup() {
 
   // Connect to Wi-Fi network with SSID and password
   Serial.print("Connecting to ");
-  Serial.println(ssid);
+  Serial.println(WIFI_SSID);
   #if defined BOX
   WiFi.setHostname("boxlight");
   #elif defined BED
   WiFi.setHostname("bedlight");
   #endif
-  WiFi.begin(ssid, password);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
@@ -143,11 +139,12 @@ void sendInfo(WiFiClient client) {
   String name = "Box";
   #endif
   led::Configuration config = led::get_config();
+  CHSV color = rgb2hsv_approximate(config.base_color);
   String body = "{\"name\":\"" + name + "\","
       "\"effect\":" + String(config.effect) + ","
-      "\"h\":" + String(config.base_color.h) + ","
-      "\"s\":" + String(config.base_color.s) + ","
-      "\"v\":" + String(config.base_color.v) + ","
+      "\"h\":" + String(color.h) + ","
+      "\"s\":" + String(color.s) + ","
+      "\"v\":" + String(color.v) + ","
       "\"cycle\":" + (config.cycle ? "true" : "false") + "}";
   
   client.println("HTTP/1.1 200 OK");

@@ -66,15 +66,15 @@ static void printColor(CRGB color) {
   Serial.println(color.b);
 }
 
-static CHSV getColor(uint32_t t) {
+static CRGB getColor(uint32_t t) {
   if (config.cycle) {
-    return CHSV((t / 32) % 256, 255, DEFAULT_BRIGHTNESS);
+    return CRGB(CHSV((t / 32) % 256, 255, DEFAULT_BRIGHTNESS));
   } else {
     return config.base_color;
   }
 }
 static void steady(uint32_t t, CRGBArray<NUM_LEDS> leds) {
-  CHSV color = getColor(t);
+  CRGB color = getColor(t);
   for(int i = 0; i < NUM_LEDS; i++) {
     leds[i] = color;
   }
@@ -94,7 +94,7 @@ static void breathe(uint32_t t, CRGBArray<NUM_LEDS> leds) {
     double brightness = sin((dist * 2.0 + -t / 128.0));
     uint8_t value = max(brightness * 255.0, 0.0);
 
-    CHSV color = getColor(t);
+    CHSV color = rgb2hsv_approximate(getColor(t));
     color.value = value;
 
     leds[i] = color;
@@ -108,7 +108,7 @@ static void rain(uint32_t time, CRGBArray<NUM_LEDS> leds) {
     leds[i].fadeToBlackBy(255);
   }
 
-  CHSV color(getColor(time));
+  CHSV color = rgb2hsv_approximate(getColor(time));
 
   for (int d = 0; d < NUM_DROPLETS; ++d) {
     uint8_t x = random(d * 27 + 5) % WIDTH;
@@ -137,7 +137,7 @@ static void rain(uint32_t time, CRGBArray<NUM_LEDS> leds) {
 
 static void gradient(uint32_t t, CRGBArray<NUM_LEDS> leds) {
   const int16_t DIFFERENCE = 20;
-  CHSV color = getColor(t);
+  CHSV color = rgb2hsv_approximate(getColor(t));
   uint8_t hue = color.hue;
   uint8_t high = (hue + DIFFERENCE) % 256;
   uint8_t low = (hue - DIFFERENCE) % 256;
@@ -174,7 +174,7 @@ static void spiral(uint32_t t, CRGBArray<NUM_LEDS> leds) {
     double brightness = sin((dist * 2.0 + -t / 128.0));
     uint8_t value = map(acos(cX / dist), -PI, PI, 0, 255);
 
-    CHSV color = getColor(t);
+    CHSV color = rgb2hsv_approximate(getColor(t));
     color.value = value;
 
     leds[i] = color;
@@ -231,14 +231,23 @@ void set_cycle() {
   config.cycle = true;
 }
 
+void set_cycle(bool cycle) {
+  config.cycle = cycle;
+}
+
 void set_hue(uint8_t hue) {
-  config.base_color = CHSV(hue, 255, DEFAULT_BRIGHTNESS);
+  config.base_color = CRGB(CHSV(hue, 255, DEFAULT_BRIGHTNESS));
   config.cycle = false;
 }
 
 void set_hsv(uint8_t hue, uint8_t saturation, uint8_t value) {
   uint16_t big_value = value * DEFAULT_BRIGHTNESS / 255;
-  config.base_color = CHSV(hue, saturation, static_cast<uint8_t>(big_value));
+  config.base_color = CRGB(CHSV(hue, saturation, static_cast<uint8_t>(big_value)));
+  config.cycle = false;
+}
+
+void set_rgb(uint8_t r, uint8_t g, uint8_t b) {
+  config.base_color = CRGB(r, g, b);
   config.cycle = false;
 }
 
