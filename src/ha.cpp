@@ -23,59 +23,25 @@ const std::string prefix = "unknown";
 #endif
 
 const std::string rgb_id = prefix + "_rgb";
-const std::string cycle_id = prefix + "_cycle";
-const std::string rainbow_id = prefix + "_rainbow";
+const std::string color_cycle_id = prefix + "_color_cycle";
 const std::string mode_id = prefix + "_mode";
 
-const std::string rgb_name = name + " RGB";
+const std::string rgb_name = name;
+const std::string color_cycle_name = name + " Color Cycle";
 const std::string mode_name = name + " Mode";
 
 HALight rgb_light(rgb_id.c_str(), HALight::Features::RGBFeature);
-HALight cycle_light(cycle_id.c_str());
-HALight rainbow_light(cycle_id.c_str());
-
-HASelect mode_select(select_id.c_str());
+HALight color_cycle_light(color_cycle_id.c_str());
+HASelect mode_select(mode_id.c_str());
 
 void updateInterface() {
   led::Configuration config = led::get_config();
-  if (config.effect == led::Effect::OFF) {
-    rgb_light.setState(false);
-    cycle_light.setState(false);
-    rainbow_light.setState(false);
-  } else if (config.effect == led::Effect::RAINBOW) {
-    rgb_light.setState(false);
-    cycle_light.setState(false);
-    rainbow_light.setState(true);
-  } else if (config.cycle) {
-    rgb_light.setState(false);
-    cycle_light.setState(true);
-    rainbow_light.setState(false);
-  } else {
-    rgb_light.setState(true);
-    cycle_light.setState(false);
-    rainbow_light.setState(false);
-    rgb_light.setRGBColor(HALight::RGBColor(
-        config.base_color.r, config.base_color.g, config.base_color.b));
-  }
-}
-
-void onColorCycleStateCommand(bool state, HALight *sender) {
-  if (state) {
-    led::set_cycle(true);
-    led::set_effect(led::Effect::STEADY);
-  } else {
-    led::set_effect(led::Effect::OFF);
-  }
-  updateInterface();
-}
-
-void onRainbowStateCommand(bool state, HALight *sender) {
-  if (state) {
-    led::set_cycle(false);
-    led::set_effect(led::Effect::RAINBOW);
-  } else {
-    led::set_effect(led::Effect::OFF);
-  }
+  mode_select.setState(config.effect + 1);
+  rgb_light.setState(config.effect != led::Effect::OFF);
+  rgb_light.setAvailability(!config.cycle);
+  color_cycle_light.setState(config.cycle);
+  rgb_light.setRGBColor(HALight::RGBColor(
+      config.base_color.r, config.base_color.g, config.base_color.b));
 }
 
 void onRGBStateCommand(bool state, HALight *sender) {
@@ -92,6 +58,11 @@ void onRGBCommand(HALight::RGBColor color, HALight *sender) {
   led::set_cycle(false);
   led::set_effect(led::Effect::STEADY);
   led::set_rgb(color.red, color.green, color.blue);
+  updateInterface();
+}
+
+void onColorCycleStateCommand(bool state, HALight *sender) {
+  led::set_cycle(state);
   updateInterface();
 }
 
@@ -122,16 +93,16 @@ void setup() {
   rgb_light.setName(rgb_name.c_str());
   rgb_light.onStateCommand(onRGBStateCommand);
   rgb_light.onRGBColorCommand(onRGBCommand);
+  rgb_light.setIcon("mdi:lightbulb");
+
+  color_cycle_light.setName(color_cycle_name.c_str());
+  color_cycle_light.onStateCommand(onColorCycleStateCommand);
+  color_cycle_light.setIcon("mdi:looks");
 
   mode_select.setName(mode_name.c_str());
   mode_select.setOptions("Off;Steady;Breathe;Rain;Gradient;Rainbow;Spiral");
   mode_select.onCommand(onModeSelect);
-
-  cycle_light.setName(cycle_name.c_str());
-  cycle_light.onStateCommand(onColorCycleStateCommand);
-
-  rainbow_light.setName(rainbow_name.c_str());
-  rainbow_light.onStateCommand(onRainbowStateCommand);
+  mode_select.setIcon("mdi:flash");
 
   mqtt.begin(BROKER_ADDR, BROKER_PORT, BROKER_USERNAME, BROKER_PASSWORD);
 
